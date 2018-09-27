@@ -150,40 +150,16 @@ public class OperacoesBancoDados {
                 + "27500, true, 'NETUNO Ltda.', 'Departamnto de TI', 2);";
         listaSQLs.add(sql12);
 
-        Connection conn = null;
-        ResultSet rs = null;
+        Connection conn = criaConexao();
+        System.out.println("Criando toda a infraestrutura");
+        executaBatchUpdate(conn, listaSQLs);
             
-        conn = this.criaConexao();
-        String sqlTESTE = "SELECT * FROM tb_usuario LIMIT 1";
+            
         
-        
-        try{
+    }
     
-         Statement stmt = conn.createStatement();
-         
-            System.out.println("Executando a seguinte query .....");
-            System.out.println(sqlTESTE);
-            rs = stmt.executeQuery(sqlTESTE);
-            System.out.println("Executada com sucesso!");
- 
-           
-        
-        }catch(SQLException e){
-        
-        if(e.getMessage().contains("Table 'sistemacontrolecontratos.tb_usuario' doesn't exist")
-               || e.getMessage().contains("Table") && e.getMessage().contains("exist")){
-        
-            executaBatchUpdate(conn, listaSQLs);    
-            
-        }else {
-                return;
-        }
-            
-        
-    }
-    }
 
-    public void criaBaseDados() throws ClassNotFoundException, SQLException {
+    public void criaBaseDados() {
 
         //REGISTRANDO O DRIVER NO CONSTRUTOR E NÃO EM CADA MÉTODO
         //Class.forName("com.mysql.jdbc.Driver");
@@ -198,13 +174,21 @@ public class OperacoesBancoDados {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
             stmt = conn.createStatement();
             conn.setAutoCommit(false);
-            stmt.execute("CREATE DATABASE IF NOT EXISTS sistemaControleContratos");
+            stmt.execute("CREATE DATABASE IF NOT EXISTS sistema_controle_contratos");
             conn.commit();
         } catch (SQLException ex) {
-            conn.rollback();
+            try {
+                conn.rollback();
+            } catch (SQLException ex1) {
+                Logger.getLogger(OperacoesBancoDados.class.getName()).log(Level.SEVERE, null, ex1);
+            }
             Logger.getLogger(OperacoesBancoDados.class.getName()).log(Level.SEVERE, null, ex);
         } finally {
-            stmt.close();
+            try {
+                stmt.close();
+            } catch (SQLException ex) {
+                Logger.getLogger(OperacoesBancoDados.class.getName()).log(Level.SEVERE, null, ex);
+            }
             fecharConexao(conn);
         
         }
@@ -213,7 +197,7 @@ public class OperacoesBancoDados {
 
     public Connection criaConexao()  {
 
-        this.setURL("jdbc:mysql://localhost:3306/sistemaControleContratos");
+        this.setURL("jdbc:mysql://localhost:3306/sistema_controle_contratos");
 
         Connection conexao = null;
         Statement stmt = null;
@@ -336,7 +320,6 @@ public class OperacoesBancoDados {
         for (int i = 0; i < listaSQLs.size(); i++) {
             System.out.println(listaSQLs.get(i));
             stmt.addBatch((String) listaSQLs.get(i));
-
         }
 
         try {
@@ -373,9 +356,9 @@ public class OperacoesBancoDados {
             conn = DriverManager.getConnection(URL, USER, PASSWORD);
             stmt = conn.createStatement();
             conn.setAutoCommit(false);
-            System.out.println("DELETANDO BASE DE DADOS sistemaControleContratos");
-            stmt.execute("DROP DATABASE IF EXISTS sistemaControleContratos");
-            System.out.println("BASE DE DADOS sistemaControleContratos DELETADA COM SUCESSO!");
+            System.out.println("DELETANDO BASE DE DADOS sistema_controle_contratos");
+            stmt.execute("DROP DATABASE IF EXISTS sistema_controle_contratos");
+            System.out.println("BASE DE DADOS sistema_controle_contratos DELETADA COM SUCESSO!");
             conn.commit();
         } catch (SQLException ex) {
             conn.rollback();

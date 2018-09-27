@@ -33,6 +33,7 @@ public class ContratoDAO {
             FUNCIONÁRIO SÓ PODE CRIAR UM CONTRATO SE ELE TIVER PAPEL DE GESTOR NO SISTEMA
          */
         String mensagem = null;
+        Connection conexao = fabrica.criaConexao();
         
         /*REGRA DE NEGÓCIO: A GESTÃO DE CONTRATOS COM VALOR SUPERIOR A R$ 50.000, 
         NÃO PODE SER FEITA POR FUNCIONÁRIOS QUE NÃO TENHAM CARGO DE GESTÃO
@@ -70,8 +71,9 @@ public class ContratoDAO {
                     + "', '" + contrato.getDepartamentoResponsavel()
                     + "', " + contrato.getFuncionarioGestor().getIdUsuario()
                     + ");";
-
-            fabrica.executaQuerieUpdate(conn, sql);
+            
+            
+            fabrica.executaQuerieUpdate(conexao, sql);
 
             mensagem = "Contrato criado com sucesso";
 
@@ -89,16 +91,17 @@ public class ContratoDAO {
                      + "não está ativo no sistema" ;  
         }
     
-    
+        conexao.close();
         return mensagem;
 
     }
 
     
-    public String editarContrato(Connection conn, Contrato contrato) throws ClassNotFoundException, SQLException {
+    public String editarContrato(Contrato contrato) throws ClassNotFoundException, SQLException {
         
         
         String mensagem = null;
+        Connection conn = fabrica.criaConexao();
         //    REGRA DE NEGÓCIO: FUNCIONÁRIO SÓ PODE EDITAR UM CONTRATO SE ELE FOR GESTOR DO CONTRATO ESPECÍFICO
 
         
@@ -146,12 +149,12 @@ public class ContratoDAO {
                   + " do contrato não está ativo no sistema" ;  
         
         }
-        
+        conn.close();
         return mensagem;
         
     }
 
-    public String removerContrato(Connection conn, Contrato contrato) throws SQLException, ClassNotFoundException {
+    public String removerContrato(Contrato contrato) throws SQLException, ClassNotFoundException {
 
         /*
         
@@ -160,6 +163,7 @@ public class ContratoDAO {
         APENAS O GESTOR DO CONTRATO PODE EXCLUIR UM CONTRATO
         
          */
+        Connection conn = fabrica.criaConexao();
         String mensagem = null;
 
         if (contrato.getFuncionarioGestor().getIdUsuario() == principal.getUsuarioLogado().getIdUsuario()) {
@@ -182,17 +186,16 @@ public class ContratoDAO {
         + "Você não tem permissão para remover o contrato";
 
         }
-
+        conn.close();
         return mensagem;
 
     }
 
-    public List<Contrato> consultaContratos(Connection conn) throws ClassNotFoundException, SQLException {
+    public List<Contrato> consultaContratos() throws ClassNotFoundException, SQLException {
 
         /*
         
         REGRA DE NEGÓCIO: 
-        
         SE FUNCIONÁRIO É GESTOR ELE ENXERGA TODOS OS CONTRATOS,
         INCLUSIVE DE OUTROS DEPARTAMENTOS.
         SE ELE NÃO FOR GESTOR, 
@@ -201,6 +204,7 @@ public class ContratoDAO {
         
          */
         String sql = null;
+        Connection conexao = fabrica.criaConexao();
 
         if (principal.getUsuarioLogado().getPapelUsuario().equals("gestor")) {
             sql = "SELECT * FROM tb_contrato;";
@@ -211,6 +215,7 @@ public class ContratoDAO {
                     + "OR id_funcionarioGestor = "
                     +principal.getUsuarioLogado().getIdUsuario()+";";
         }
+        Connection conn = fabrica.criaConexao();
 
         ResultSet rs = fabrica.executaQuerieResultSet(conn, sql);
 
@@ -218,11 +223,12 @@ public class ContratoDAO {
 
     }
 
-    public Contrato findContrato(Connection conn, int id) throws ClassNotFoundException, SQLException {
+    public Contrato findContrato(int id) throws ClassNotFoundException, SQLException {
 
-      
+        
         Contrato contrato = new Contrato();
         String sql = null;
+        Connection conn = fabrica.criaConexao();
         
             
             sql = "SELECT * FROM tb_contrato WHERE id_contrato = "
@@ -242,6 +248,7 @@ public class ContratoDAO {
         if (rs != null){
         contrato = this.extraiContratoResultSet(conn, rs);    
         }
+        conn.close();
         return contrato;
 
     }
@@ -294,7 +301,7 @@ public class ContratoDAO {
         }
 
         rs.close();
-
+        conn.close();
         return listaContratos;
 
     }
